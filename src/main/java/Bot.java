@@ -11,6 +11,7 @@ public class Bot {
     public static void main(String[] args) throws LoginException, IOException {
         JDABuilder builder = new JDABuilder(AccountType.BOT);
         builder.setToken(new String(Files.readAllBytes(Paths.get("token.txt"))));
+        builder.addEventListeners(new CommandListener());
         builder.build();
     }
 }
