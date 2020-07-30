@@ -13,6 +13,7 @@ public class CommandListener extends ListenerAdapter {
         if (message.startsWith("!")) {
             String[] messageUsable = message.split("!");
             switch (messageUsable[1].toLowerCase()) {
+                /*TODO: Add Minesweeper to Commands*/
                 case "info": {
                     event.getChannel().sendMessage("Work in Progress...").queue();
                     break;
@@ -47,6 +48,7 @@ public class CommandListener extends ListenerAdapter {
         String difficulty = "";
         boolean reactionCommand = true;
 
+//        Choose Difficulty via Reactions
         if (!Game.isRunning) {
             switch (event.getReactionEmote().toString()) {
                 case "RE:U+1f1ea":
@@ -64,7 +66,7 @@ public class CommandListener extends ListenerAdapter {
             }
 
             if (event.getMessageId().equals(lastMessageID)) {
-                if (reactionCommand) {
+                if (reactionCommand && !Game.isRunning) {
                     new Game(event.getChannel(), difficulty);
                 }
                 event.getReaction().removeReaction(event.getUser()).queue();

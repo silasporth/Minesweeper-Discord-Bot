@@ -1,5 +1,7 @@
 import net.dv8tion.jda.api.entities.MessageChannel;
 
+import java.util.Random;
+
 import static java.lang.Integer.parseInt;
 
 public class Game {
@@ -8,6 +10,10 @@ public class Game {
     private int width;
     private int height;
     private int bombs;
+    //    Nothing = 0, Bomb = 1
+    private int[][] bombGrid;
+    //    Covered = 0, Uncovered = 1, Flag = 2
+    private int[][] currentGrid;
 
     public Game(MessageChannel channel, String difficulty) {
         isRunning = true;
@@ -24,5 +30,24 @@ public class Game {
                 bombs = parseInt(strings[3]);
             }
         }
+    }
+
+    private int[][] createBombGrid(int width, int height, int bombs) {
+        int[][] bombGrid = new int[height][width];
+        int randomY;
+        int randomX;
+        int i = 0;
+        do {
+            randomY = new Random().nextInt(height);
+            randomX = new Random().nextInt(width);
+            if (bombGrid[randomY][randomX] != 1) {
+                bombGrid[randomY][randomX] = 1;
+                i++;
+            }
+        } while (i < bombs);
+
+//        TODO: count bombs for each panel and save as 10 - 18 in array
+
+        return bombGrid;
     }
 }
