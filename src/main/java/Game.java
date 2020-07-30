@@ -1,5 +1,6 @@
 import net.dv8tion.jda.api.entities.MessageChannel;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import static java.lang.Integer.parseInt;
@@ -46,8 +47,88 @@ public class Game {
             }
         } while (i < bombs);
 
-//        TODO: count bombs for each panel and save as 10 - 18 in array
-
+//        count bombs for each panel and save as 10 - 18 in array
+        int bombNumber = 10;
+        for (int j = 0; j < bombGrid.length; j++) {
+            for (int k = 0; k < bombGrid[j].length; k++) {
+                if (bombGrid[j][k] == 0) {
+//                    Reihe 1
+                    if (j == 0) {
+//                        Position 1
+                        if (k == 0) {
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j + 1], k, k + 2))
+                                if (l == 1) bombNumber++;
+//                        Letzte Position
+                        } else if (k == bombGrid[j].length - 1) {
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k - 1, k + 1))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j + 1], k - 1, k + 1))
+                                if (l == 1) bombNumber++;
+//                        Alle Positionen dazwischen
+                        } else {
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k - 1, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j + 1], k - 1, k + 2))
+                                if (l == 1) bombNumber++;
+                        }
+                    }
+//                    Letzte Reihe
+                    else if (j == bombGrid.length - 1) {
+//                        Position 1
+                        if (k == 0) {
+                            for (int l : Arrays.copyOfRange(bombGrid[j - 1], k, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k, k + 2))
+                                if (l == 1) bombNumber++;
+//                        Letzte Position
+                        } else if (k == bombGrid[j].length - 1) {
+                            for (int l : Arrays.copyOfRange(bombGrid[j - 1], k - 1, k + 1))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k - 1, k + 1))
+                                if (l == 1) bombNumber++;
+//                        Alle Positionen dazwischen
+                        } else {
+                            for (int l : Arrays.copyOfRange(bombGrid[j - 1], k - 1, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k - 1, k + 2))
+                                if (l == 1) bombNumber++;
+                        }
+                    }
+//                    Alle Reihen dazwischen
+                    else {
+//                        Position 1
+                        if (k == 0) {
+                            for (int l : Arrays.copyOfRange(bombGrid[j - 1], k, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j + 1], k, k + 2))
+                                if (l == 1) bombNumber++;
+//                        Letzte Position
+                        } else if (k == bombGrid[j].length - 1) {
+                            for (int l : Arrays.copyOfRange(bombGrid[j - 1], k - 1, k + 1))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k - 1, k + 1))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j + 1], k - 1, k + 1))
+                                if (l == 1) bombNumber++;
+//                        Alle Positionen dazwischen
+                        } else {
+                            for (int l : Arrays.copyOfRange(bombGrid[j - 1], k - 1, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j], k - 1, k + 2))
+                                if (l == 1) bombNumber++;
+                            for (int l : Arrays.copyOfRange(bombGrid[j + 1], k - 1, k + 2))
+                                if (l == 1) bombNumber++;
+                        }
+                    }
+                    bombGrid[j][k] = bombNumber;
+                }
+                bombNumber = 10;
+            }
+        }
         return bombGrid;
     }
 }
