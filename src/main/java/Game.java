@@ -2,34 +2,16 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 
 import java.util.Random;
 
-import static java.lang.Integer.parseInt;
-
 public class Game {
 
     public static boolean isRunning = false;
-    private int width;
-    private int height;
-    private int bombs;
     //    Nothing = 0, Bomb = 1
     private int[][] bombGrid;
     //    Covered = 0, Uncovered = 1, Flag = 2
     private int[][] currentGrid;
-
-    public Game(MessageChannel channel, String difficulty) {
+    public Game(MessageChannel channel, Difficulty difficulty) {
         isRunning = true;
-        setDifficulty(difficulty);
-        channel.sendMessage(width + " " + height + " " + bombs).queue();
-    }
-
-    private void setDifficulty(String difficulty) {
-        String[][] difficulties = {{"easy", "8", "8", "10"}, {"normal", "16", "16", "40"}, {"hard", "16", "30", "99"}};
-        for (String[] strings : difficulties) {
-            if (difficulty.equals(strings[0])) {
-                width = parseInt(strings[1]);
-                height = parseInt(strings[2]);
-                bombs = parseInt(strings[3]);
-            }
-        }
+        channel.sendMessage(difficulty.getWidth() + " " + difficulty.getHeight() + " " + difficulty.getBombs()).queue();
     }
 
     private int[][] createBombGrid(int width, int height, int bombs) {
@@ -64,5 +46,47 @@ public class Game {
             }
         }
         return bombGrid;
+    }
+
+    public enum Difficulty {
+        EASY(8, 8, 10, "U+1f1ea"),
+        NORMAL(16, 16, 40, "U+1f1f3"),
+        HARD(16, 30, 99, "U+1f1ed");
+
+        public static final String difficultyQuestion = "At which difficulty you wanna play? (Easy/Normal/Hard)";
+        private final int width;
+        private final int height;
+        private final int bombs;
+        private final String emoji;
+
+        Difficulty(int width, int height, int bombs, String emoji) {
+            this.width = width;
+            this.height = height;
+            this.bombs = bombs;
+            this.emoji = emoji;
+        }
+
+        public static Difficulty difficultyByEmoji(String emoji) {
+            for (Difficulty difficulty : values())
+                if (emoji.equals(difficulty.getEmoji()))
+                    return difficulty;
+            throw new IllegalArgumentException("Emoji not supported");
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public int getBombs() {
+            return bombs;
+        }
+
+        public String getEmoji() {
+            return emoji;
+        }
     }
 }

@@ -20,19 +20,23 @@ public class CommandListener extends ListenerAdapter {
                 }
                 case "play": {
                     if (!Game.isRunning)
-                        event.getChannel().sendMessage("At which difficulty you wanna play? (Easy/Normal/Hard)").queue();
+                        event.getChannel().sendMessage(Game.Difficulty.difficultyQuestion).queue();
                     break;
                 }
+                /*Just for testing purposes*/
+                case "stop":
+                    Game.isRunning = false;
+                    break;
+
                 default:
                     event.getChannel().sendMessage("Unknown Command").queue();
                     break;
             }
         }
 
-        if (event.getMessage().getAuthor().isBot() && message.contains("difficulty")) {
-            event.getMessage().addReaction("U+1F1EA").queue();
-            event.getMessage().addReaction("U+1F1F3").queue();
-            event.getMessage().addReaction("U+1F1ED").queue();
+        if (event.getMessage().getAuthor().isBot() && message.equals(Game.Difficulty.difficultyQuestion)) {
+            for (Game.Difficulty difficulty : Game.Difficulty.values())
+                event.getMessage().addReaction(difficulty.getEmoji()).queue();
         }
 
         if (event.getMessage().getAuthor().isBot()) {
@@ -45,28 +49,11 @@ public class CommandListener extends ListenerAdapter {
         if (event.getMember().getUser().isBot())
             return;
 
-        String difficulty = "";
-        boolean reactionCommand = true;
-
-//        Choose Difficulty via Reactions
+//        Choose Difficulty via Reactions while no Game is running
         if (!Game.isRunning) {
-            switch (event.getReactionEmote().toString()) {
-                case "RE:U+1f1ea":
-                    difficulty = "easy";
-                    break;
-                case "RE:U+1f1f3":
-                    difficulty = "normal";
-                    break;
-                case "RE:U+1f1ed":
-                    difficulty = "hard";
-                    break;
-                default:
-                    reactionCommand = false;
-                    break;
-            }
-
+            Game.Difficulty difficulty = Game.Difficulty.difficultyByEmoji(event.getReactionEmote().toString().substring(3));
             if (event.getMessageId().equals(lastMessageID)) {
-                if (reactionCommand && !Game.isRunning) {
+                if (!Game.isRunning) {
                     new Game(event.getChannel(), difficulty);
                 }
                 event.getReaction().removeReaction(event.getUser()).queue();
