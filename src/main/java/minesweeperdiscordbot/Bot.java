@@ -1,3 +1,5 @@
+package minesweeperdiscordbot;
+
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDABuilder;
 

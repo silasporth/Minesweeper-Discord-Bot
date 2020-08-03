@@ -1,3 +1,6 @@
+package minesweeperdiscordbot;
+
+import minesweeperdiscordbot.Game.Difficulty;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -9,18 +12,17 @@ public class CommandListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        String message = event.getMessage().getContentRaw();
-        if (message.startsWith("!")) {
-            String[] messageUsable = message.split("!");
+        String message = event.getMessage().getContentDisplay();
+        if (message.toLowerCase().startsWith("!minesweeper") || message.toLowerCase().startsWith("!ms")) {
+            String[] messageUsable = message.split(" ");
             switch (messageUsable[1].toLowerCase()) {
-                /*TODO: Add Minesweeper to Commands*/
                 case "info": {
                     event.getChannel().sendMessage("Work in Progress...").queue();
                     break;
                 }
                 case "play": {
                     if (!Game.isRunning)
-                        event.getChannel().sendMessage(Game.Difficulty.difficultyQuestion).queue();
+                        event.getChannel().sendMessage(Difficulty.difficultyQuestion).queue();
                     break;
                 }
                 /*Just for testing purposes*/
@@ -34,8 +36,8 @@ public class CommandListener extends ListenerAdapter {
             }
         }
 
-        if (event.getMessage().getAuthor().isBot() && message.equals(Game.Difficulty.difficultyQuestion)) {
-            for (Game.Difficulty difficulty : Game.Difficulty.values())
+        if (event.getMessage().getAuthor().isBot() && message.equals(Difficulty.difficultyQuestion)) {
+            for (Difficulty difficulty : Difficulty.values())
                 event.getMessage().addReaction(difficulty.getEmoji()).queue();
         }
 
@@ -50,8 +52,8 @@ public class CommandListener extends ListenerAdapter {
             return;
 
 //        Choose Difficulty via Reactions while no Game is running
-        if (!Game.isRunning) {
-            Game.Difficulty difficulty = Game.Difficulty.difficultyByEmoji(event.getReactionEmote().toString().substring(3));
+        if (!Game.isRunning && (event.getReactionEmote().getEmoji().equals(Difficulty.EASY.getEmoji()) || event.getReactionEmote().getEmoji().equals(Difficulty.NORMAL.getEmoji()) || event.getReactionEmote().getEmoji().equals(Difficulty.HARD.getEmoji()))) {
+            Difficulty difficulty = Difficulty.difficultyByEmoji(event.getReactionEmote().getEmoji());
             if (event.getMessageId().equals(lastMessageID)) {
                 if (!Game.isRunning) {
                     new Game(event.getChannel(), difficulty);
