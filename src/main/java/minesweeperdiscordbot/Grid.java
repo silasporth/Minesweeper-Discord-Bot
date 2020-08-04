@@ -1,5 +1,7 @@
 package minesweeperdiscordbot;
 
+import net.dv8tion.jda.api.entities.MessageChannel;
+
 import java.util.HashMap;
 import java.util.Random;
 
@@ -57,5 +59,21 @@ public class Grid {
         currentGridEmojis.put("\uD83D\uDEA9", 2);
 
         return getKeyByValue(currentGridEmojis, getValueAtPos(grid, x, y));
+    }
+
+    public static void sendGrid(MessageChannel channel, StringBuilder message) {
+        int count = 0;
+        StringBuilder messageToSend = new StringBuilder();
+        for (int i = 0; i < message.length(); i++) {
+            messageToSend.append(message.substring(i, i + 1));
+            if (message.substring(i, i + 1).equals("\n"))
+                count++;
+            if (count != 0 && count % 3 == 0) {
+                channel.sendMessage(messageToSend).queue();
+                messageToSend.setLength(0);
+                count = 0;
+            }
+        }
+        channel.sendMessage(messageToSend).queue();
     }
 }

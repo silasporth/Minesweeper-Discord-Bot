@@ -8,22 +8,22 @@ import java.util.Objects;
 
 public class Game {
 
-    public static boolean isRunning = false;
-    //    Nothing = 0, Bomb = 1
+    public static final String positionQuestion = "What do you wanna do? Which position do you choose? (!ms mark/dig <emoji1> <emoji2>)";
+    public static final HashMap<String, Integer> action = new HashMap<>();
+    public boolean isRunning = false;
+    public boolean isPermitted = false;
+    private MessageChannel channel;
+    private int width;
+    private int height;
+    //    Nothing = 0; Bomb = 1; 10,11,12,... = Number of Bombs in radius
     private int[][] bombGrid;
-    //    Covered = 0, Uncovered = 1, Flag = 2
-    private final int[][] currentGrid;
 
     private final HashMap<String, Integer> emojiX = new HashMap<>();
     private final HashMap<String, Integer> emojiY = new HashMap<>();
+    //    Covered = 0; Uncovered = 1; Flag = 2
+    private int[][] currentGrid;
 
-    public Game(MessageChannel channel, Difficulty difficulty) {
-        isRunning = true;
-        buildHashmaps();
-        channel.sendMessage(difficulty.getWidth() + " " + difficulty.getHeight() + " " + difficulty.getBombs()).queue();
-        currentGrid = new int[difficulty.getHeight()][difficulty.getWidth()];
-        StringBuilder message = buildMessage(difficulty.getWidth(), difficulty.getHeight());
-        sendMessage(channel, message);
+    public Game() {
     }
 
     public static <T, E> T getKeyByValue(Map<T, E> map, E value) {
@@ -33,6 +33,65 @@ public class Game {
             }
         }
         return null;
+    }
+
+    private void newGame(MessageChannel channel, Difficulty difficulty) {
+        this.channel = channel;
+        this.width = difficulty.getWidth();
+        this.height = difficulty.getHeight();
+        isRunning = true;
+        buildHashmaps();
+        bombGrid = Grid.createBombGrid(width, height, difficulty.getBombs());
+        currentGrid = new int[width][height];
+        StringBuilder message = buildMessage(width, height);
+        Grid.sendGrid(channel, message);
+        choosePosition();
+    }
+
+    public void run(MessageChannel channel, String[] input) {
+        if (input.length == 1) {
+            if (input[0].equals(Difficulty.EASY.getEmoji())) {
+                newGame(channel, Difficulty.EASY);
+            } else if (input[0].equals(Difficulty.NORMAL.getEmoji())) {
+                newGame(channel, Difficulty.NORMAL);
+            } else if (input[0].equals(Difficulty.HARD.getEmoji())) {
+                newGame(channel, Difficulty.HARD);
+            }
+        } else {
+            switch (input[1].toLowerCase()) {
+                case "play":
+                    channel.sendMessage(Difficulty.difficultyQuestion).queue();
+                    break;
+                case "stop":
+                    channel.sendMessage("Stopped Game.").queue();
+                    isRunning = false;
+                    break;
+                case "mark":
+                case "dig":
+                    if (isPermitted) {
+                        int currentAction = action.get(input[1]);
+                        int x, y;
+                        try {
+                            if (emojiX.containsKey(input[2])) {
+                                x = emojiX.get(input[2]);
+                                y = emojiY.get(input[3]);
+                            } else {
+                                x = emojiX.get(input[3]);
+                                y = emojiY.get(input[2]);
+                            }
+                            Grid.setValueAtPos(currentGrid, x, y, currentAction);
+                            StringBuilder message = buildMessage(width, height);
+                            Grid.sendGrid(channel, message);
+                            choosePosition();
+                        } catch (NullPointerException e) {
+                            channel.sendMessage("Please input an emoji per direction!").queue();
+                        }
+                    } else {
+                        channel.sendMessage("You're currently not permitted to use this command!").queue();
+                    }
+                    break;
+            }
+        }
     }
 
     private StringBuilder buildMessage(int width, int height) {
@@ -49,20 +108,8 @@ public class Game {
         return message;
     }
 
-    private void sendMessage(MessageChannel channel, StringBuilder message) {
-        int count = 0;
-        StringBuilder messageToSend = new StringBuilder();
-        for (int i = 0; i < message.length(); i++) {
-            messageToSend.append(message.substring(i, i + 1));
-            if (message.substring(i, i + 1).equals("\n"))
-                count++;
-            if (count != 0 && count % 3 == 0) {
-                channel.sendMessage(messageToSend).queue();
-                messageToSend.setLength(0);
-                count = 0;
-            }
-        }
-        channel.sendMessage(messageToSend).queue();
+    public void choosePosition() {
+        channel.sendMessage(positionQuestion).queue();
     }
 
     private void buildHashmaps() {
@@ -76,6 +123,9 @@ public class Game {
         String emojiYString = "\uD83C\uDF4E\uD83C\uDF50\uD83C\uDF4A\uD83C\uDF4B\uD83C\uDF4C\uD83C\uDF49\uD83C\uDF47\uD83C\uDF53\uD83C\uDF48\uD83C\uDF52\uD83C\uDF51\uD83E\uDD6D\uD83C\uDF4D\uD83E\uDD65\uD83E\uDD5D\uD83C\uDF6A";
         for (int i = 0; i < emojiYString.length(); i += 2)
             emojiY.put(emojiYString.substring(i, i + 2), count++);
+
+        action.put("dig", 1);
+        action.put("mark", 2);
     }
 
     public enum Difficulty {

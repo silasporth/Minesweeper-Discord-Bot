@@ -1,33 +1,47 @@
 package minesweeperdiscordbot;
 
 import minesweeperdiscordbot.Game.Difficulty;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Objects;
+
 public class CommandListener extends ListenerAdapter {
 
-    private String lastMessageID;
+    HashMap<User, Game> games = new HashMap<>();
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentDisplay();
         if (message.toLowerCase().startsWith("!minesweeper") || message.toLowerCase().startsWith("!ms")) {
+
+            if (!games.containsKey(event.getAuthor()))
+                games.put(event.getAuthor(), new Game());
+
             String[] messageUsable = message.split(" ");
             switch (messageUsable[1].toLowerCase()) {
                 case "info": {
                     event.getChannel().sendMessage("Work in Progress...").queue();
                     break;
                 }
-                case "play": {
-                    if (!Game.isRunning)
-                        event.getChannel().sendMessage(Difficulty.difficultyQuestion).queue();
+                case "play":
+                case "mark":
+                case "dig":
+                    games.get(event.getAuthor()).run(event.getChannel(), messageUsable);
                     break;
-                }
+
                 /*Just for testing purposes*/
                 case "stop":
-                    Game.isRunning = false;
+                    if (games.containsKey(event.getAuthor())) {
+                        games.get(event.getAuthor()).run(event.getChannel(), messageUsable);
+                        games.remove(event.getAuthor());
+                    } else {
+                        event.getChannel().sendMessage("There is currently no Game running belonging to you!").queue();
+                    }
                     break;
 
                 default:
@@ -40,26 +54,24 @@ public class CommandListener extends ListenerAdapter {
             for (Difficulty difficulty : Difficulty.values())
                 event.getMessage().addReaction(difficulty.getEmoji()).queue();
         }
-
-        if (event.getMessage().getAuthor().isBot()) {
-            lastMessageID = event.getMessageId();
-        }
     }
 
     @Override
     public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
-        if (event.getMember().getUser().isBot())
+        if (Objects.requireNonNull(event.getMember()).getUser().isBot())
             return;
 
+        boolean reactionCommand = false;
+
+        if (!games.get(event.getMember().getUser()).isRunning) {
+            games.get(event.getMember().getUser()).run(event.getChannel(), new String[]{event.getReactionEmote().getEmoji()});
+            reactionCommand = true;
+        } else {
+        }
+
 //        Choose Difficulty via Reactions while no Game is running
-        if (!Game.isRunning && (event.getReactionEmote().getEmoji().equals(Difficulty.EASY.getEmoji()) || event.getReactionEmote().getEmoji().equals(Difficulty.NORMAL.getEmoji()) || event.getReactionEmote().getEmoji().equals(Difficulty.HARD.getEmoji()))) {
-            Difficulty difficulty = Difficulty.difficultyByEmoji(event.getReactionEmote().getEmoji());
-            if (event.getMessageId().equals(lastMessageID)) {
-                if (!Game.isRunning) {
-                    new Game(event.getChannel(), difficulty);
-                }
-                event.getReaction().removeReaction(event.getUser()).queue();
-            }
+        if (event.getChannel().retrieveMessageById(event.getMessageId()).complete().getAuthor().equals(event.getJDA().getSelfUser()) && reactionCommand) {
+            event.getReaction().removeReaction(Objects.requireNonNull(event.getUser())).queue();
         }
     }
 }
