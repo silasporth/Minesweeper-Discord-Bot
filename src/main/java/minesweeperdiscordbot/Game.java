@@ -10,16 +10,15 @@ public class Game {
 
     public static final String positionQuestion = "What do you wanna do? Which position do you choose? (!ms mark/dig <emoji1> <emoji2>)";
     public static final HashMap<String, Integer> action = new HashMap<>();
+    private final HashMap<String, Integer> emojiX = new HashMap<>();
+    private final HashMap<String, Integer> emojiY = new HashMap<>();
     public boolean isRunning = false;
     public boolean isPermitted = false;
     private MessageChannel channel;
     private int width;
     private int height;
-    //    Nothing = 0; Bomb = 1; 10,11,12,... = Number of Bombs in radius
+    //    Bomb = 1; 10,11,12,... = Number of Bombs in radius
     private int[][] bombGrid;
-
-    private final HashMap<String, Integer> emojiX = new HashMap<>();
-    private final HashMap<String, Integer> emojiY = new HashMap<>();
     //    Covered = 0; Uncovered = 1; Flag = 2
     private int[][] currentGrid;
 
@@ -50,20 +49,14 @@ public class Game {
 
     public void run(MessageChannel channel, String[] input) {
         if (input.length == 1) {
-            if (input[0].equals(Difficulty.EASY.getEmoji())) {
-                newGame(channel, Difficulty.EASY);
-            } else if (input[0].equals(Difficulty.NORMAL.getEmoji())) {
-                newGame(channel, Difficulty.NORMAL);
-            } else if (input[0].equals(Difficulty.HARD.getEmoji())) {
-                newGame(channel, Difficulty.HARD);
-            }
+            newGame(channel, Difficulty.difficultyByEmoji(input[0]));
         } else {
             switch (input[1].toLowerCase()) {
                 case "play":
                     channel.sendMessage(Difficulty.difficultyQuestion).queue();
                     break;
-                case "stop":
-                    channel.sendMessage("Stopped Game.").queue();
+                case "end":
+                    channel.sendMessage("Ended Game.").queue();
                     isRunning = false;
                     break;
                 case "mark":
@@ -71,20 +64,33 @@ public class Game {
                     if (isPermitted) {
                         int currentAction = action.get(input[1]);
                         int x, y;
+                        String emoji1;
+                        String emoji2;
+                        if (input.length == 3) {
+                            emoji1 = input[2].substring(0, 2);
+                            emoji2 = input[2].substring(2, 4);
+                        } else {
+                            emoji1 = input[2];
+                            emoji2 = input[3];
+                        }
                         try {
-                            if (emojiX.containsKey(input[2])) {
-                                x = emojiX.get(input[2]);
-                                y = emojiY.get(input[3]);
+                            if (emojiX.containsKey(emoji1)) {
+                                x = emojiX.get(emoji1);
+                                y = emojiY.get(emoji2);
                             } else {
-                                x = emojiX.get(input[3]);
-                                y = emojiY.get(input[2]);
+                                x = emojiX.get(emoji2);
+                                y = emojiY.get(emoji1);
                             }
-                            Grid.setValueAtPos(currentGrid, x, y, currentAction);
+                            if (currentGrid[y][x] == 2) {
+                                currentGrid[y][x] = 0;
+                            } else {
+                                Grid.setValueAtPos(currentGrid, x, y, currentAction);
+                            }
                             StringBuilder message = buildMessage(width, height);
                             Grid.sendGrid(channel, message);
                             choosePosition();
-                        } catch (NullPointerException e) {
-                            channel.sendMessage("Please input an emoji per direction!").queue();
+                        } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
+                            channel.sendMessage("Please input one emoji per direction!").queue();
                         }
                     } else {
                         channel.sendMessage("You're currently not permitted to use this command!").queue();
@@ -103,7 +109,7 @@ public class Game {
             message.append("\n");
             message.append(getKeyByValue(emojiY, j));
             for (int k = 0; k < width; k++)
-                message.append(Grid.getEmojiByPos(currentGrid, k, j));
+                message.append(Grid.getEmojiByPos(bombGrid, currentGrid, k, j));
         }
         return message;
     }

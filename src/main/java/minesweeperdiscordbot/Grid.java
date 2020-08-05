@@ -43,22 +43,41 @@ public class Grid {
         return bombGrid;
     }
 
-    public static int[][] setValueAtPos(int[][] grid, int x, int y, int value) {
+    public static void setValueAtPos(int[][] grid, int x, int y, int value) {
         grid[y][x] = value;
-        return grid;
     }
 
     private static int getValueAtPos(int[][] grid, int x, int y) {
         return grid[y][x];
     }
 
-    public static String getEmojiByPos(int[][] grid, int x, int y) {
+    public static String getEmojiByPos(int[][] bombGrid, int[][] currentGrid, int x, int y) {
         HashMap<String, Integer> currentGridEmojis = new HashMap<>();
+        HashMap<String, Integer> bombGridEmojis = new HashMap<>();
+
         currentGridEmojis.put("\uD83D\uDFE9", 0);
         currentGridEmojis.put("\uD83D\uDFE6", 1);
         currentGridEmojis.put("\uD83D\uDEA9", 2);
+        bombGridEmojis.put("\uD83D\uDCA3", 1);
+        int hex = 0x0031;
+        for (int i = 11; i < 19; i++) {
+            bombGridEmojis.put(((char) (hex + i - 11) + "\u20e3"), i);
+        }
 
-        return getKeyByValue(currentGridEmojis, getValueAtPos(grid, x, y));
+        int bombGridValue = getValueAtPos(bombGrid, x, y);
+        int currentGridValue = getValueAtPos(currentGrid, x, y);
+
+        if (currentGridValue == 0 /*Panel Covered*/) {
+            return getKeyByValue(currentGridEmojis, currentGridValue);
+        } else if (currentGridValue == 2 /*Flag*/) {
+            return getKeyByValue(currentGridEmojis, currentGridValue);
+        } else if (bombGridValue == 1 /*Bomb*/) {
+            return getKeyByValue(bombGridEmojis, bombGridValue);
+        } else if (11 <= bombGridValue && bombGridValue <= 18 /*Bombs nearby*/) {
+            return getKeyByValue(bombGridEmojis, bombGridValue);
+        } else /*Nothing*/ {
+            return getKeyByValue(currentGridEmojis, currentGridValue);
+        }
     }
 
     public static void sendGrid(MessageChannel channel, StringBuilder message) {

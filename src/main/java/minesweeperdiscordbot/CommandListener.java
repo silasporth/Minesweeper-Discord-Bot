@@ -19,9 +19,6 @@ public class CommandListener extends ListenerAdapter {
         String message = event.getMessage().getContentDisplay();
         if (message.toLowerCase().startsWith("!minesweeper") || message.toLowerCase().startsWith("!ms")) {
 
-            if (!games.containsKey(event.getAuthor()))
-                games.put(event.getAuthor(), new Game());
-
             String[] messageUsable = message.split(" ");
             switch (messageUsable[1].toLowerCase()) {
                 case "info": {
@@ -31,11 +28,12 @@ public class CommandListener extends ListenerAdapter {
                 case "play":
                 case "mark":
                 case "dig":
+                    if (!games.containsKey(event.getAuthor()))
+                        games.put(event.getAuthor(), new Game());
                     games.get(event.getAuthor()).run(event.getChannel(), messageUsable);
                     break;
 
-                /*Just for testing purposes*/
-                case "stop":
+                case "end":
                     if (games.containsKey(event.getAuthor())) {
                         games.get(event.getAuthor()).run(event.getChannel(), messageUsable);
                         games.remove(event.getAuthor());
@@ -65,6 +63,7 @@ public class CommandListener extends ListenerAdapter {
 
         if (!games.get(event.getMember().getUser()).isRunning) {
             games.get(event.getMember().getUser()).run(event.getChannel(), new String[]{event.getReactionEmote().getEmoji()});
+            games.get(event.getMember().getUser()).isPermitted = true;
             reactionCommand = true;
         } else {
         }
