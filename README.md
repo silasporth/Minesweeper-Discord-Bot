@@ -1,2 +1,8 @@
 # Minesweeper-Discord-Bot
-In the future there will be a discord bot, you can use to play Minesweeper.
+You can play Minesweeper at three difficulties with this bot.
+
+### General Command
+``!minesweeper/!ms <control>``
+
+### Controls
+``play, end, flag, dig``
