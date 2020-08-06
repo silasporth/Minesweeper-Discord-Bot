@@ -17,10 +17,12 @@ public class Game {
     private MessageChannel channel;
     private int width;
     private int height;
+    private int bombs;
     //    Bomb = 1; 10,11,12,... = Number of Bombs in radius
     private int[][] bombGrid;
     //    Covered = 0; Uncovered = 1; Flag = 2
     private int[][] currentGrid;
+    private boolean isFirstTime = true;
 
     public Game() {
     }
@@ -38,10 +40,11 @@ public class Game {
         this.channel = channel;
         this.width = difficulty.getWidth();
         this.height = difficulty.getHeight();
+        this.bombs = difficulty.getBombs();
         isRunning = true;
         buildHashmaps();
-        bombGrid = Grid.createBombGrid(width, height, difficulty.getBombs());
         currentGrid = new int[width][height];
+        bombGrid = new int[width][height];
         StringBuilder message = buildMessage(width, height);
         Grid.sendGrid(channel, message);
         choosePosition();
@@ -81,8 +84,18 @@ public class Game {
                                 x = emojiX.get(emoji2);
                                 y = emojiY.get(emoji1);
                             }
+
+                            if (isFirstTime) {
+                                do {
+                                    bombGrid = Grid.createBombGrid(width, height, bombs);
+                                } while (bombGrid[y][x] != 10);
+                                isFirstTime = false;
+                            }
+
                             if (currentGrid[y][x] == 2) {
                                 currentGrid[y][x] = 0;
+                            } else if (currentGrid[y][x] == 0 && bombGrid[y][x] == 10) {
+                                Grid.exposeEmptySquares(bombGrid, currentGrid, x, y);
                             } else {
                                 Grid.setValueAtPos(currentGrid, x, y, currentAction);
                             }

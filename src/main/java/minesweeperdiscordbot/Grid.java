@@ -2,6 +2,7 @@ package minesweeperdiscordbot;
 
 import net.dv8tion.jda.api.entities.MessageChannel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -23,7 +24,7 @@ public class Grid {
             }
         } while (i < bombs);
 
-//        count bombs for each panel and save as 10 - 18 in array
+//        count bombs for each Tile and save as 10 - 18 in array
 //        Special Thanks to https://github.com/sebschmitt for creating this Algorithm
         for (int j = 0; j < bombGrid.length; j++) {
             for (int k = 0; k < bombGrid[j].length; k++) {
@@ -41,6 +42,31 @@ public class Grid {
             }
         }
         return bombGrid;
+    }
+
+    public static void exposeEmptySquares(int[][] bombGrid, int[][] currentGrid, int x, int y) {
+        ArrayList<int[]> emptyTiles1 = new ArrayList<>();
+        ArrayList<int[]> emptyTiles2;
+        int[] firstXY = {x, y};
+        emptyTiles1.add(firstXY);
+        while (!emptyTiles1.isEmpty()) {
+            emptyTiles2 = new ArrayList<>(emptyTiles1);
+            for (int[] coords : emptyTiles2) {
+                x = coords[0];
+                y = coords[1];
+                currentGrid[y][x] = 1;
+                emptyTiles1.remove(coords);
+                for (int j = (y == 0 ? y : y - 1); j <= (y == bombGrid.length - 1 ? y : y + 1); j++) {
+                    for (int i = (x == 0 ? x : x - 1); i <= (x == bombGrid[j].length - 1 ? x : x + 1); i++) {
+                        if (bombGrid[j][i] == 10 && currentGrid[j][i] == 0) {
+                            emptyTiles1.add(new int[]{i, j});
+                        } else {
+                            currentGrid[j][i] = 1;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public static void setValueAtPos(int[][] grid, int x, int y, int value) {
@@ -67,7 +93,7 @@ public class Grid {
         int bombGridValue = getValueAtPos(bombGrid, x, y);
         int currentGridValue = getValueAtPos(currentGrid, x, y);
 
-        if (currentGridValue == 0 /*Panel Covered*/) {
+        if (currentGridValue == 0 /*Tile Covered*/) {
             return getKeyByValue(currentGridEmojis, currentGridValue);
         } else if (currentGridValue == 2 /*Flag*/) {
             return getKeyByValue(currentGridEmojis, currentGridValue);
