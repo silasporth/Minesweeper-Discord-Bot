@@ -9,7 +9,7 @@ import java.util.Objects;
 
 public class Game {
 
-    public static final String positionQuestion = "What do you wanna do? Which position do you choose? (!ms mark/dig <emoji1> <emoji2>)";
+    public static final String positionQuestion = "What do you wanna do? Which position do you choose? (!ms flag/dig <emoji1> <emoji2>)";
     public static final String win = "\uD83C\uDF89 CONGRATULATIONS! You won! \uD83C\uDF89";
     public static final String loss = "You lost!";
     public static final HashMap<String, Integer> action = new HashMap<>();
@@ -43,8 +43,7 @@ public class Game {
     }
 
     /*Sets everything up for a new game*/
-    private void newGame(MessageChannel channel, Difficulty difficulty) {
-        this.channel = channel;
+    private void newGame(Difficulty difficulty) {
         this.width = difficulty.getWidth();
         this.height = difficulty.getHeight();
         this.bombs = difficulty.getBombs();
@@ -61,8 +60,9 @@ public class Game {
 
     /*The function which runs everything*/
     public void run(MessageChannel channel, String[] input) {
+        this.channel = channel;
         if (input.length == 1) { /*Gets emoji as input and then starts a new game with the corresponding difficulty*/
-            newGame(channel, Difficulty.difficultyByEmoji(input[0]));
+            newGame(Difficulty.difficultyByEmoji(input[0]));
         } else {
             switch (input[1].toLowerCase()) {
                 case "play":
@@ -207,7 +207,7 @@ public class Game {
             emojiY.put(emojiYString.substring(i, i + 2), count++);
 
         action.put("dig", 1);
-        action.put("mark", 2);
+        action.put("flag", 2);
     }
 
     public enum Difficulty { /*Everything needed for the difficulties*/

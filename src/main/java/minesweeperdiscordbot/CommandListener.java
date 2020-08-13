@@ -69,29 +69,36 @@ public class CommandListener extends ListenerAdapter {
 
     @Override
     public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
-        if (Objects.requireNonNull(event.getMember()).getUser().isBot())
+        User user;
+        if (event.isFromGuild()) {
+            user = event.getMember().getUser();
+        } else {
+            user = event.getUser();
+        }
+
+        if (user.isBot())
             return;
 
         boolean reactionCommand = false;
         String emoji = event.getReactionEmote().getEmoji();
 
-        if (!games.get(event.getMember().getUser()).isRunning) {
+        if (!games.get(user).isRunning) {
             if (emoji.equals("\uD83C\uDDF3")) { /*N-Emoji*/
-                games.remove(event.getMember().getUser());
+                games.remove(user);
                 event.getChannel().sendMessage("Thanks for Playing!").queue();
             } else if (emoji.equals("\uD83C\uDDFE")) { /*Y-Emoji*/
-                games.remove(event.getMember().getUser());
-                games.put(event.getMember().getUser(), new Game(event.getMember().getUser()));
-                games.get(event.getMember().getUser()).run(event.getChannel(), new String[]{"!ms", "play"});
+                games.remove(user);
+                games.put(user, new Game(user));
+                games.get(user).run(event.getChannel(), new String[]{"!ms", "play"});
             } else { /*Every other Emoji*/
-                games.get(event.getMember().getUser()).run(event.getChannel(), new String[]{emoji});
-                games.get(event.getMember().getUser()).isPermitted = true;
+                games.get(user).run(event.getChannel(), new String[]{emoji});
+                games.get(user).isPermitted = true;
             }
             reactionCommand = true;
         }
 
-        if (event.getChannel().retrieveMessageById(event.getMessageId()).complete().getAuthor().equals(event.getJDA().getSelfUser()) && reactionCommand) { /*Auto-Remove of user-added reactions*/
-            event.getReaction().removeReaction(Objects.requireNonNull(event.getUser())).queue();
+        if (event.getChannel().retrieveMessageById(event.getMessageId()).complete().getAuthor().equals(event.getJDA().getSelfUser()) && reactionCommand && event.isFromGuild()) { /*Auto-Remove of user-added reactions*/
+            event.getReaction().removeReaction(Objects.requireNonNull(user)).queue();
         }
     }
 }
