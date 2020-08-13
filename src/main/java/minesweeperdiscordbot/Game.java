@@ -28,6 +28,7 @@ public class Game {
     //    Covered = 0; Uncovered = 1; Flag = 2
     private int[][] currentGrid;
     private boolean isFirstTime = true;
+    private boolean won = false;
 
     public Game(User user) {
         this.user = user;
@@ -119,26 +120,33 @@ public class Game {
                                 }
                             } else if (currentAction == 2) { /*Flag*/
                                 if (currentGrid[y][x] == 0) { /*Placing Flag on Covered Tile*/
-                                    flagsAvailable--;
-                                    Grid.setValueAtPos(currentGrid, x, y, currentAction);
+                                    if (flagsAvailable > 0) {
+                                        flagsAvailable--;
+                                        Grid.setValueAtPos(currentGrid, x, y, currentAction);
+                                    } else
+                                        channel.sendMessage("You have no flags left!").queue();
                                 } else if (currentGrid[y][x] == 2) { /*Removing Flag*/
                                     currentGrid[y][x] = 0;
                                     flagsAvailable++;
                                 }
                             }
-                            if (flagsAvailable > 0) { /*Prints Game*/
+                            if (flagsAvailable == 0) /*Checks if the game is won only if all flags are placed*/
+                                won = checkWin();
+
+                            if (!won) { /*Prints Game*/
                                 StringBuilder message = buildMessage(width, height);
                                 channel.sendMessage("Player: " + user.getName() + " \uD83D\uDEA9 " + flagsAvailable).queue();
                                 Grid.sendGrid(channel, message);
                                 if (!loose) { /*Lets the player choose his next Tile*/
                                     choosePosition();
+                                    if (flagsAvailable == 0)
+                                        channel.sendMessage("*Tip: One or more flags are misplaced!*").queue();
                                 } else { /*Lost the Game*/
                                     channel.sendMessage(loss).queue();
                                     isRunning = false;
                                 }
-                            } else { /*Checks if the game is won only if all flags are placed*/
-                                checkWin();
                             }
+
                         } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
                             channel.sendMessage("Please input one emoji per direction!").queue();
                         }
@@ -150,7 +158,7 @@ public class Game {
         }
     }
 
-    private void checkWin() {
+    private boolean checkWin() {
         boolean broke = false;
         for (int i = 0; i < currentGrid.length; i++) { /*Checks if all bombs are flagged*/
             for (int j = 0; j < currentGrid[i].length; j++) {
@@ -159,7 +167,9 @@ public class Game {
                     break;
                 }
             }
-            if (broke) break;
+            if (broke) {
+                System.out.println("Not won!");
+            }
         }
         if (!broke) { /*Runs only if truly all bombs are flagged.*/
             channel.sendMessage(win).queue();
@@ -173,7 +183,8 @@ public class Game {
             StringBuilder message = buildMessage(width, height);
             channel.sendMessage("Player: " + user.getName() + " \uD83D\uDEA9 " + flagsAvailable).queue();
             Grid.sendGrid(channel, message);
-        }
+            return true;
+        } else return false;
     }
 
     private StringBuilder buildMessage(int width, int height) { /*This function is used to build the game as a message*/

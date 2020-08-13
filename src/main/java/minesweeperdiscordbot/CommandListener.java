@@ -60,15 +60,15 @@ public class CommandListener extends ListenerAdapter {
                     event.getMessage().addReaction(difficulty.getEmoji()).queue();
             } else if (message.equals(Game.win) || message.equals(Game.loss)) {
                 event.getChannel().sendMessage("Do you wanna play again?").queue(message1 -> {
-                    message1.addReaction("\uD83C\uDDFE").queue();
-                    message1.addReaction("\uD83C\uDDF3").queue();
+                    message1.addReaction("✔️").queue();
+                    message1.addReaction("❌").queue();
                 });
             }
         }
     }
 
     @Override
-    public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
+    public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) throws NullPointerException {
         User user;
         if (event.isFromGuild()) {
             user = event.getMember().getUser();
@@ -83,10 +83,10 @@ public class CommandListener extends ListenerAdapter {
         String emoji = event.getReactionEmote().getEmoji();
 
         if (!games.get(user).isRunning) {
-            if (emoji.equals("\uD83C\uDDF3")) { /*N-Emoji*/
+            if (emoji.equals("❌")) { /*N-Emoji*/
                 games.remove(user);
                 event.getChannel().sendMessage("Thanks for Playing!").queue();
-            } else if (emoji.equals("\uD83C\uDDFE")) { /*Y-Emoji*/
+            } else if (emoji.equals("✔️")) { /*Y-Emoji*/
                 games.remove(user);
                 games.put(user, new Game(user));
                 games.get(user).run(event.getChannel(), new String[]{"!ms", "play"});
