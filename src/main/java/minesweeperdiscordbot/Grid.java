@@ -71,14 +71,21 @@ public class Grid {
 
     public static boolean exposeSquare(int[][] bombGrid, int[][] currentGrid, int x, int y) { /*Uncover all neighbouring tiles and if an bomb gets uncovered returns true at the end*/
         boolean loose = false;
+        ArrayList<int[]> coords = new ArrayList<>();
         for (int j = (y == 0 ? y : y - 1); j <= (y == currentGrid.length - 1 ? y : y + 1); j++) {
             for (int i = (x == 0 ? x : x - 1); i <= (x == currentGrid[j].length - 1 ? x : x + 1); i++) {
-                if (currentGrid[j][i] == 0)
+                if (currentGrid[j][i] == 0) /*Uncover the tile*/
                     currentGrid[j][i] = 1;
-                if (bombGrid[j][i] == 1 && currentGrid[j][i] != 2)
+                if (bombGrid[j][i] == 10) /*If tile has no bomb neighbour add to list*/
+                    coords.add(new int[]{i, j});
+                if (bombGrid[j][i] == 1 && currentGrid[j][i] != 2) {
                     loose = true;
+                }
             }
         }
+        for (int[] k : coords) /*Empty all tiles around it*/
+            if (currentGrid[k[1]][k[0]] != 1)
+                exposeEmptySquares(bombGrid, currentGrid, k[0], k[1]);
         return loose;
     }
 
