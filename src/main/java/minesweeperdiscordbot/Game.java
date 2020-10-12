@@ -25,7 +25,7 @@ public class Game {
     private int flagsAvailable;
     //    Bomb = 1; 10,11,12,... = Number of Bombs in radius
     private int[][] bombGrid;
-    //    Covered = 0; Uncovered = 1; Flag = 2
+    //    Covered = 0; Uncovered = 1; Flag = 2; Wrong placed = 3
     private int[][] currentGrid;
     private boolean isFirstTime = true;
     private boolean won = false;
@@ -134,6 +134,15 @@ public class Game {
                                 won = checkWin();
 
                             if (!won) { /*Prints Game*/
+                                if (loose) {
+                                    for (int i = 0; i < currentGrid.length; i++) {
+                                        for (int j = 0; j < currentGrid[i].length; j++) {
+                                            if (currentGrid[i][j] == 2 && bombGrid[i][j] != 1)
+                                                currentGrid[i][j] = 3;
+                                        }
+
+                                    }
+                                }
                                 StringBuilder message = buildMessage(width, height);
                                 channel.sendMessage("Player: " + user.getName() + " \uD83D\uDEA9 " + flagsAvailable).queue();
                                 Grid.sendGrid(channel, message);

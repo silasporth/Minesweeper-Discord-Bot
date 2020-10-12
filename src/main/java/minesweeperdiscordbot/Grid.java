@@ -100,6 +100,7 @@ public class Grid {
         currentGridEmojis.put("\uD83D\uDFE9", 0);
         currentGridEmojis.put("\uD83D\uDFE6", 1);
         currentGridEmojis.put("\uD83D\uDEA9", 2);
+        currentGridEmojis.put("❌", 3);
         bombGridEmojis.put("\uD83D\uDCA3", 1);
         int hex = 0x0031;
         for (int i = 11; i < 19; i++) {
