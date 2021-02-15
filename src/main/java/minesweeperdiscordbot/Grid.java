@@ -110,7 +110,7 @@ public class Grid {
         int bombGridValue = bombGrid[y][x];
         int currentGridValue = currentGrid[y][x];
 
-        if (currentGridValue == 0 || currentGridValue == 2) { /*Tile Covered or Flag*/
+        if (currentGridValue == 0 || currentGridValue == 2 || currentGridValue == 3) { /*Tile Covered or Flag*/
             return getKeyByValue(currentGridEmojis, currentGridValue);
         } else if (bombGridValue == 1 || (11 <= bombGridValue && bombGridValue <= 18)) { /*Bomb or Bombs nearby*/
             return getKeyByValue(bombGridEmojis, bombGridValue);

@@ -20,18 +20,16 @@ public class CommandListener extends ListenerAdapter {
         String message = event.getMessage().getContentDisplay();
         if (message.toLowerCase().startsWith("!minesweeper") || message.toLowerCase().startsWith("!ms")) {
             String[] messageUsable = message.split(" ");
-            if (messageUsable.length == 1 || messageUsable[1].toLowerCase().equals("info")) {
+            if (messageUsable.length == 1 || messageUsable[1].equalsIgnoreCase("info")) {
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.setTitle("Minesweeper Discord Bot");
                 embed.setDescription("You can play Minesweeper at three difficulties with this bot.");
                 embed.addField("General Command", "!minesweeper/!ms <control>", false);
                 embed.addField("Controls", "play, end, flag, dig", false);
                 event.getChannel().sendMessage(embed.build()).queue();
+                return;
             }
             switch (messageUsable[1].toLowerCase()) {
-                case "info": {
-                    break;
-                }
                 case "play":
                 case "flag":
                 case "dig":
