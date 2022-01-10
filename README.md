@@ -4,7 +4,7 @@ pretty normal. You may realize that the game looks a bit different, but this was
 encounter any sort of problem, open a new issue at my GitHub.
 
 ### General Command
-``!minesweeper/!ms <control>``
+``/ms <control>``
 
 ### Controls
 ``play, end, flag, dig``
